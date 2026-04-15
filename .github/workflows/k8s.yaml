@@ -1,0 +1,67 @@
+name: Kubernetes Validation
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "K8s/**"
+      - ".github/workflows/k8s.yml"
+
+jobs:
+  validate-k8s:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create kind cluster
+        uses: helm/kind-action@v1.10.0
+
+      - name: Substitui a variavel IMAGE_REPO no deployment
+        env:
+          IMAGE_REPO: ${{ secrets.DOCKER_USERNAME }}
+        run: |
+          sed -i "s|\${IMAGE_REPO}|${IMAGE_REPO}|g" K8s/deployment.yaml
+          cat K8s/deployment.yaml
+
+      - name: Aplica manifesto K8s
+        run: kubectl apply -f K8s/
+
+      - name: Aguarda pelo deployment
+        run: kubectl wait --for=condition=available --timeout=180s deployment/health-api
+
+      - name: Verifica recursos do cluster
+        run: |
+          kubectl get deployments
+          kubectl get pods -o wide
+          kubectl get svc
+          kubectl get ingress
+
+      - name: Testa o endpoint das aplicações
+        run: |
+          kubectl port-forward svc/health-api 8080:80 >/tmp/port-forward.log 2>&1 &
+          sleep 10
+          curl -f http://127.0.0.1:8080/health
+          curl -f http://127.0.0.1:8080/ready
+          curl -f http://127.0.0.1:8080/info
+
+      - name: Mostra logs em caso de falha
+        if: failure()
+        run: |
+          echo "=== DEPLOYMENTS ==="
+          kubectl get deployments
+          echo "=== PODS ==="
+          kubectl get pods -o wide
+          echo "=== SERVICES ==="
+          kubectl get svc
+          echo "=== INGRESS ==="
+          kubectl get ingress
+          echo "=== DESCRIBE DEPLOYMENT ==="
+          kubectl describe deployment health-api
+          echo "=== DESCRIBE PODS ==="
+          kubectl describe pods
+          echo "=== LOGS ==="
+          kubectl logs deployment/health-api --all-containers=true
