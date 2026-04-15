@@ -28,7 +28,7 @@ jobs:
           cat Projeto/K8s/deployment.yaml
 
       - name: Aplica manifesto K8s
-        run: kubectl apply -f K8s/
+        run: kubectl apply -f Projetos/K8s/
 
       - name: Aguarda pelo deployment
         run: kubectl wait --for=condition=available --timeout=180s deployment/health-api
