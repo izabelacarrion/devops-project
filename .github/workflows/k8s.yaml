@@ -24,8 +24,8 @@ jobs:
         env:
           IMAGE_REPO: ${{ secrets.DOCKER_USERNAME }}
         run: |
-          sed -i "s|\${IMAGE_REPO}|${IMAGE_REPO}|g" K8s/deployment.yaml
-          cat K8s/deployment.yaml
+          sed -i "s|\${IMAGE_REPO}|${IMAGE_REPO}|g" Projeto/K8s/deployment.yaml
+          cat Projeto/K8s/deployment.yaml
 
       - name: Aplica manifesto K8s
         run: kubectl apply -f K8s/
