@@ -6,7 +6,7 @@ on:
     branches:
       - main
     paths:
-      - "K8s/**"
+      - "Projeto/K8s/**"
       - ".github/workflows/k8s.yml"
 
 jobs:
