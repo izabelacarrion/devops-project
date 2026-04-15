@@ -14,10 +14,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout do repositório
         uses: actions/checkout@v4
 
-      - name: Create kind cluster
+      - name: Cria cluster no Kind
         uses: helm/kind-action@v1.10.0
 
       - name: Substitui a variavel IMAGE_REPO no deployment
